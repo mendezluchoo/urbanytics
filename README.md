@@ -34,15 +34,13 @@ Para levantar el proyecto de forma local, asegúrate de tener Docker y Docker Co
 
 Clona el repositorio:
 
-Bash
-
 git clone https://github.com/tu-usuario/urbanitycs.git
 cd urbanitycs
+
 Levanta todos los servicios:
 
-Bash
-
 docker-compose up --build
+
 Accede a la aplicación:
 
 El frontend estará disponible en http://localhost:3000 (o el puerto que configures).
