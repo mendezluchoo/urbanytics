@@ -34,7 +34,7 @@ Para levantar el proyecto de forma local, asegúrate de tener Docker y Docker Co
 
 Clona el repositorio:
 
-git clone https://github.com/mendezluchoo/urbanitycs.git
+git clone https://github.com/mendezluchoo/urbanytics.git
 cd urbanitycs
 
 Levanta todos los servicios:
