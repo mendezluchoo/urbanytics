@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: urbanytics_db
+    environment:
+      POSTGRES_USER: user_urbanytics
+      POSTGRES_PASSWORD: password_urbanytics
+      POSTGRES_DB: db_urbanytics
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
