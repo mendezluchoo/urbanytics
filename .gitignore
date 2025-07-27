@@ -22,6 +22,7 @@
 # vendor/
 
 # Datos de la base de datos de Docker
+__pycache__/
 postgres-data/
 
 
