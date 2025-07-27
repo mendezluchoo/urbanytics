@@ -21,6 +21,10 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+# Datos de la base de datos de Docker
+postgres-data/
+
+
 # Go workspace file
 go.work
 
