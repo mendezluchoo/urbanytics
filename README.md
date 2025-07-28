@@ -62,6 +62,9 @@ docker-compose up -d
 
 # Cargar datos (opcional - ya incluidos)
 python load_data.py
+
+# Limpiar datos (recomendado para mejor calidad)
+python clean_data_complete.py
 ```
 
 ### 3. Ejecutar Backend
@@ -143,8 +146,42 @@ urbanytics/
 │   └── main.go             # Servidor principal
 ├── postgres-data/          # Datos de PostgreSQL
 ├── load_data.py            # Script de carga de datos
+├── clean_data_complete.py  # Script de limpieza completa
 └── docker-compose.yml      # Configuración Docker
 ```
+
+## 🧹 Limpieza de Datos
+
+### Script de Limpieza Completa (`clean_data_complete.py`)
+
+El proyecto incluye un script comprehensivo que realiza todas las operaciones de limpieza necesarias para garantizar la calidad de los datos:
+
+#### Operaciones de Limpieza
+1. **Limpieza Básica**: Eliminación de valores nulos en columnas críticas
+2. **Limpieza de Precios**: Eliminación de precios <= 0 y outliers extremos
+3. **Limpieza de Ratio de Venta**: Validación de ratios > 0 y eliminación de outliers
+4. **Limpieza de Tiempo**: Eliminación de tiempos negativos y > 20 años
+5. **Limpieza de Fechas**: Conversión y validación de fechas
+6. **Limpieza de Tipos**: Eliminación de 'Nan' en Property Type y Residential Type
+7. **Limpieza de Ciudades**: Eliminación de ciudades vacías y problemáticas
+8. **Limpieza de Años**: Validación de años entre 2000-2020
+9. **Limpieza de Direcciones**: Eliminación de direcciones vacías
+10. **Limpieza de Valores Avaluados**: Eliminación de valores <= 0
+11. **Eliminación de Duplicados**: Basado en Serial Number
+12. **Conversión de Tipos**: Tipos de datos apropiados
+13. **Renombrado de Columnas**: Formato snake_case
+
+#### Uso
+```bash
+# Ejecutar limpieza completa
+python clean_data_complete.py
+```
+
+#### Beneficios
+- **Calidad de Datos**: Eliminación de registros problemáticos
+- **Consistencia**: Tipos de datos uniformes
+- **Precisión**: Análisis más confiables
+- **Rendimiento**: Consultas más eficientes
 
 ## 🔧 API Endpoints
 
