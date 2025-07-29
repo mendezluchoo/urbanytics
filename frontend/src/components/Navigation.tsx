@@ -28,7 +28,7 @@ const Navigation = () => {
           alignItems: 'center'
         }}>
           {/* Logo/Brand */}
-          <Link to="/app" style={{
+          <Link to="/" style={{
             fontSize: '1.5rem',
             fontWeight: '600',
             color: 'var(--primary-color)',

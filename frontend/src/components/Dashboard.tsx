@@ -67,18 +67,18 @@ type KPIs = {
   };
 };
 
-// Paleta de colores mejorada y más acorde
+// Paleta de colores mejorada con mejor contraste
 const COLORS = {
-  primary: '#3B82F6',      // Azul principal
-  secondary: '#10B981',    // Verde
-  accent: '#F59E0B',       // Amarillo/Naranja
-  purple: '#8B5CF6',       // Púrpura
-  pink: '#EC4899',         // Rosa
-  teal: '#14B8A6',         // Verde azulado
-  orange: '#F97316',       // Naranja
-  indigo: '#6366F1',       // Índigo
-  red: '#EF4444',          // Rojo
-  gray: '#6B7280'          // Gris
+  primary: '#2563EB',      // Azul principal más oscuro
+  secondary: '#059669',    // Verde más oscuro
+  accent: '#D97706',       // Amarillo/Naranja más oscuro
+  purple: '#7C3AED',       // Púrpura más oscuro
+  pink: '#DB2777',         // Rosa más oscuro
+  teal: '#0D9488',         // Verde azulado más oscuro
+  orange: '#EA580C',       // Naranja más oscuro
+  indigo: '#4F46E5',       // Índigo más oscuro
+  red: '#DC2626',          // Rojo más oscuro
+  gray: '#4B5563'          // Gris más oscuro
 };
 
 // Colores para gráficos circulares
@@ -323,7 +323,7 @@ function Dashboard() {
               e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-color)';
             }}
           >
-            <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+            <h3 style={{ color: 'var(--text-primary)', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: '600' }}>
               Total Propiedades
             </h3>
             <p style={{ fontSize: '2rem', fontWeight: '700', color: COLORS.primary, margin: 0 }}>
@@ -350,7 +350,7 @@ function Dashboard() {
               e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-color)';
             }}
           >
-            <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+            <h3 style={{ color: 'var(--text-primary)', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: '600' }}>
               Precio Promedio
             </h3>
             <p style={{ fontSize: '2rem', fontWeight: '700', color: COLORS.secondary, margin: 0 }}>
@@ -377,7 +377,7 @@ function Dashboard() {
               e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-color)';
             }}
           >
-            <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+            <h3 style={{ color: 'var(--text-primary)', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: '600' }}>
               Ratio Promedio
             </h3>
             <p style={{ fontSize: '2rem', fontWeight: '700', color: COLORS.accent, margin: 0 }}>
@@ -404,7 +404,7 @@ function Dashboard() {
               e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-color)';
             }}
           >
-            <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+            <h3 style={{ color: 'var(--text-primary)', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: '600' }}>
               Tiempo Promedio
             </h3>
             <p style={{ fontSize: '2rem', fontWeight: '700', color: COLORS.purple, margin: 0 }}>
@@ -431,13 +431,13 @@ function Dashboard() {
               e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-color)';
             }}
           >
-            <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+            <h3 style={{ color: 'var(--text-primary)', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: '600' }}>
               Ciudad Top
             </h3>
             <p style={{ fontSize: '1.5rem', fontWeight: '700', color: COLORS.teal, margin: 0 }}>
               {dashboardData?.kpis.top_city.name || 'N/A'}
             </p>
-            <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', margin: 0 }}>
+            <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', margin: 0, fontWeight: '500' }}>
               {formatNumber(dashboardData?.kpis.top_city.count || 0)} ventas
             </p>
           </div>
@@ -461,13 +461,13 @@ function Dashboard() {
               e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-color)';
             }}
           >
-            <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+            <h3 style={{ color: 'var(--text-primary)', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: '600' }}>
               Tipo Más Vendido
             </h3>
             <p style={{ fontSize: '1.5rem', fontWeight: '700', color: COLORS.pink, margin: 0 }}>
               {dashboardData?.kpis.top_property_type.name || 'N/A'}
             </p>
-            <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', margin: 0 }}>
+            <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', margin: 0, fontWeight: '500' }}>
               {formatNumber(dashboardData?.kpis.top_property_type.count || 0)} ventas
             </p>
           </div>

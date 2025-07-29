@@ -103,12 +103,8 @@ const MachineLearning: React.FC = () => {
   return (
     <div className="ml-container">
       <div className="ml-header">
-        <h1>🤖 Machine Learning - Tasación Inteligente</h1>
-        <p>
-          Utiliza nuestro modelo de inteligencia artificial para obtener una 
-          tasación precisa de propiedades basada en datos históricos y 
-          características del mercado.
-        </p>
+        <h1><span className="ml-emoji-accent">🤖</span> Machine Learning - Tasación Inteligente</h1>
+        <p>Simula la tasación de una propiedad usando variables clave y modelos de IA.</p>
       </div>
 
       <div className="ml-content">

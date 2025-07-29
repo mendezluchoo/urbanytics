@@ -255,37 +255,41 @@
 }
 
 .info-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  background: #fff;
+  color: #1a202c;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+  border: 1.5px solid #e2e8f0;
   padding: 2rem;
   border-radius: 15px;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
   transition: all 0.3s ease;
 }
 
 .info-card:hover {
   transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.15);
+  /* No cambiar el fondo, solo la sombra */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
 .info-icon {
-  font-size: 2.5rem;
+  color: #2563eb;
+  font-size: 2.7rem;
   margin-bottom: 1rem;
   display: block;
 }
 
 .info-card h3 {
+  color: #2d3748;
   font-size: 1.3rem;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 1rem;
-  color: white;
 }
 
 .info-card p {
+  color: #4a5568;
+  opacity: 1;
+  font-size: 1rem;
   line-height: 1.6;
-  opacity: 0.9;
   margin: 0;
 }
 
