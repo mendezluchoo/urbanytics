@@ -15,7 +15,7 @@ const LandingPage: React.FC = () => {
   }, []);
 
   const handleClientContinue = () => {
-    navigate('/dashboard');
+    navigate('/app/dashboard');
   };
 
   const handleAdminContinue = () => {

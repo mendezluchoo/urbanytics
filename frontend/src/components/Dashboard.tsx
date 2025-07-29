@@ -1128,7 +1128,7 @@ function Dashboard() {
           ¿Quieres explorar las propiedades?
         </h3>
         <Link
-          to="/"
+          to="/app"
           style={{
             backgroundColor: COLORS.primary,
             color: 'white',
