@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import { apiService } from '../services/api';
 
 // Tipos de datos para las propiedades
 type Property = {
@@ -24,28 +24,27 @@ function PropertyDetail() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Función para obtener los detalles de la propiedad desde la API
-  const fetchProperty = async () => {
+  // Función para obtener los detalles de la propiedad desde el BFF
+  const fetchProperty = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
     try {
-      const response = await axios.get(`http://localhost:8080/properties/${id}`);
-      setProperty(response.data);
+      const result = await apiService.getPropertyById(id!);
+      setProperty(result.data);
     } catch (err) {
       setError('No se pudo cargar la propiedad. Verifica que el ID sea correcto.');
       console.error('Error fetching property:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   // Efecto para cargar los datos cuando cambia el ID
   useEffect(() => {
     if (id) {
       fetchProperty();
     }
-  }, [id]);
+  }, [id, fetchProperty]);
 
   // Función para formatear precio
   const formatPrice = (price: number) => {

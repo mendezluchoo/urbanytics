@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { Link } from 'react-router-dom';
+import { apiService } from '../services/api';
 
 // Definición de tipos para los datos de analíticas
 // Estas interfaces definen la estructura de los datos que vienen del backend
@@ -86,105 +86,53 @@ const PIE_COLORS = [COLORS.primary, COLORS.secondary, COLORS.accent, COLORS.purp
 
 // Componente de dashboard con múltiples gráficos y análisis
 function Dashboard() {
-  // Estados para los datos de analíticas
-  // Cada estado almacena los datos de un gráfico específico del dashboard
-  const [priceByTown, setPriceByTown] = useState<TownAnalytics[]>([]);
-  const [propertyTypeAnalysis, setPropertyTypeAnalysis] = useState<PropertyTypeAnalytics[]>([]);
-  const [yearlyTrends, setYearlyTrends] = useState<YearlyAnalytics[]>([]);
-  const [salesRatioDistribution, setSalesRatioDistribution] = useState<SalesRatioAnalytics[]>([]);
-  const [timeToSellDistribution, setTimeToSellDistribution] = useState<TimeToSellAnalytics[]>([]);
-  const [topCities, setTopCities] = useState<TopCityAnalytics[]>([]);
+  // Estados para los datos del dashboard (optimizados con BFF)
+  const [dashboardData, setDashboardData] = useState<{
+    kpis: KPIs;
+    charts: {
+      avg_price_by_town: TownAnalytics[];
+      property_type_analysis: PropertyTypeAnalytics[];
+      yearly_trends: YearlyAnalytics[];
+      sales_ratio_distribution: SalesRatioAnalytics[];
+      time_to_sell_distribution: TimeToSellAnalytics[];
+      top_cities_by_volume: TopCityAnalytics[];
+    };
+  } | null>(null);
 
   // Estados para los filtros y opciones
   const [propertyTypes, setPropertyTypes] = useState<string[]>([]);  // Lista de tipos de propiedad disponibles
   const [selectedPropertyType, setSelectedPropertyType] = useState<string>('');  // Tipo de propiedad seleccionado para filtrar
-
-  // Estados para los KPIs principales
-  const [kpis, setKpis] = useState<KPIs | null>(null);  // Datos de los KPIs
-  const [kpisLoading, setKpisLoading] = useState<boolean>(true);  // Estado de carga de los KPIs
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Estados para el manejo de la interfaz de usuario
-  const [loading, setLoading] = useState<boolean>(false);  // Estado de carga general
-  const [error, setError] = useState<string | null>(null);  // Mensajes de error
-  
-  // Estados para manejo de gráficos expandidos
   const [expandedChart, setExpandedChart] = useState<string | null>(null);
 
-  // Función para obtener la lista de tipos de propiedad disponibles
-  // Esta función se ejecuta al cargar el componente para poblar el filtro
-  const fetchPropertyTypes = async () => {
+  // Función para cargar datos del dashboard usando el BFF
+  const loadDashboard = async (propertyType: string = '') => {
     try {
-      const response = await axios.get('http://localhost:8080/property-types');
-      setPropertyTypes(response.data);
-    } catch (err) {
-      console.error('Error fetching property types:', err);
-    }
-  };
-
-  // Función para obtener los KPIs principales del dashboard
-  // Los KPIs son métricas clave que se muestran en la parte superior del dashboard
-  const fetchKPIs = async () => {
-    setKpisLoading(true);
-    try {
-      const response = await axios.get('http://localhost:8080/analytics/kpis');
-      setKpis(response.data);
-    } catch (err) {
-      console.error('Error fetching KPIs:', err);
-    } finally {
-      setKpisLoading(false);
-    }
-  };
-
-  // Función para obtener todos los datos de analíticas en paralelo
-  // Esta función hace llamadas simultáneas a todos los endpoints de analíticas
-  // para obtener datos frescos y actualizados del dashboard
-  const fetchAllAnalytics = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Construir URL con filtros para todos los endpoints
-      // Los filtros se aplican de manera consistente a todos los gráficos
-      const params = new URLSearchParams();
+      setLoading(true);
+      setError(null);
       
-      if (selectedPropertyType) {
-        params.append('property_type', selectedPropertyType);
-      }
-      
-      const queryString = params.toString();
-
-      // Obtener todos los datos en paralelo usando Promise.all
-      // Esto mejora significativamente el rendimiento comparado con llamadas secuenciales
-      const [
-        priceByTownResponse,
-        propertyTypeResponse,
-        yearlyTrendsResponse,
-        salesRatioResponse,
-        timeToSellResponse,
-        topCitiesResponse
-      ] = await Promise.all([
-        axios.get(`http://localhost:8080/analytics/avg-price-by-town${queryString ? '?' + queryString : ''}`),
-        axios.get(`http://localhost:8080/analytics/property-type-analysis${queryString ? '?' + queryString : ''}`),
-        axios.get(`http://localhost:8080/analytics/yearly-trends${queryString ? '?' + queryString : ''}`),
-        axios.get(`http://localhost:8080/analytics/sales-ratio-distribution${queryString ? '?' + queryString : ''}`),
-        axios.get(`http://localhost:8080/analytics/time-to-sell-distribution${queryString ? '?' + queryString : ''}`),
-        axios.get(`http://localhost:8080/analytics/top-cities-by-volume${queryString ? '?' + queryString : ''}`)
-      ]);
-
-      // Actualizar el estado con los datos recibidos
-      // Cada setter actualiza un gráfico específico del dashboard
-      setPriceByTown(priceByTownResponse.data);
-      setPropertyTypeAnalysis(propertyTypeResponse.data);
-      setYearlyTrends(yearlyTrendsResponse.data);
-      setSalesRatioDistribution(salesRatioResponse.data);
-      setTimeToSellDistribution(timeToSellResponse.data);
-      setTopCities(topCitiesResponse.data);
+      // Obtener datos del dashboard en una sola petición optimizada
+      const response = await apiService.getDashboard(propertyType);
+      setDashboardData(response.data);
       
     } catch (err) {
-      console.error('Error fetching analytics:', err);
-      setError('Error al cargar los datos de analíticas. Por favor, intenta de nuevo.');
+      console.error('Error cargando dashboard:', err);
+      setError('Error al cargar los datos del dashboard. Por favor, intenta de nuevo.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Función para cargar tipos de propiedad disponibles
+  const loadPropertyTypes = async () => {
+    try {
+      const filtersData = await apiService.getPropertyFilters();
+      setPropertyTypes(filtersData.data.property_types || []);
+    } catch (err) {
+      console.error('Error cargando tipos de propiedad:', err);
     }
   };
 
@@ -241,19 +189,20 @@ function Dashboard() {
   // Restaura el dashboard a su estado inicial sin filtros
   const clearFilters = () => {
     setSelectedPropertyType('');
+    loadDashboard();
   };
 
   // Efecto para cargar datos iniciales al montar el componente
   // Se ejecuta solo una vez al cargar la página
   useEffect(() => {
-    fetchPropertyTypes();
-    fetchKPIs();
+    loadPropertyTypes();
+    loadDashboard();
   }, []);
 
   // Efecto para recargar analíticas cuando cambia el filtro de tipo de propiedad
   // Se ejecuta cada vez que el usuario selecciona un tipo de propiedad diferente
   useEffect(() => {
-    fetchAllAnalytics();
+    loadDashboard(selectedPropertyType);
   }, [selectedPropertyType]);
 
   // Componente de carga
@@ -297,7 +246,7 @@ function Dashboard() {
           <h3 style={{ color: 'var(--error-color)', marginBottom: '1rem' }}>Error</h3>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>{error}</p>
           <button
-            onClick={fetchAllAnalytics}
+            onClick={() => loadDashboard(selectedPropertyType)}
             style={{
               backgroundColor: 'var(--primary-color)',
               color: 'white',
@@ -340,11 +289,15 @@ function Dashboard() {
       </div>
 
       {/* KPIs Principales */}
-      {kpisLoading ? (
+      {loading ? (
         <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <p>Cargando KPIs...</p>
+          <p>Cargando dashboard...</p>
         </div>
-      ) : kpis && (
+      ) : error ? (
+        <div style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>
+          <p>{error}</p>
+        </div>
+      ) : dashboardData?.kpis && dashboardData?.charts && (
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
@@ -374,7 +327,7 @@ function Dashboard() {
               Total Propiedades
             </h3>
             <p style={{ fontSize: '2rem', fontWeight: '700', color: COLORS.primary, margin: 0 }}>
-              {formatNumber(kpis.total_properties)}
+              {formatNumber(dashboardData.kpis.total_properties)}
             </p>
           </div>
 
@@ -401,7 +354,7 @@ function Dashboard() {
               Precio Promedio
             </h3>
             <p style={{ fontSize: '2rem', fontWeight: '700', color: COLORS.secondary, margin: 0 }}>
-              {formatPrice(kpis.average_price)}
+              {formatPrice(dashboardData.kpis.average_price)}
             </p>
           </div>
 
@@ -428,7 +381,7 @@ function Dashboard() {
               Ratio Promedio
             </h3>
             <p style={{ fontSize: '2rem', fontWeight: '700', color: COLORS.accent, margin: 0 }}>
-              {(kpis.average_sales_ratio * 100).toFixed(1)}%
+              {(dashboardData.kpis.average_sales_ratio * 100).toFixed(1)}%
             </p>
           </div>
 
@@ -455,7 +408,7 @@ function Dashboard() {
               Tiempo Promedio
             </h3>
             <p style={{ fontSize: '2rem', fontWeight: '700', color: COLORS.purple, margin: 0 }}>
-              {kpis.average_years_until_sold.toFixed(1)} años
+              {dashboardData.kpis.average_years_until_sold.toFixed(1)} años
             </p>
           </div>
 
@@ -482,10 +435,10 @@ function Dashboard() {
               Ciudad Top
             </h3>
             <p style={{ fontSize: '1.5rem', fontWeight: '700', color: COLORS.teal, margin: 0 }}>
-              {kpis.top_city.name}
+              {dashboardData?.kpis.top_city.name || 'N/A'}
             </p>
             <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', margin: 0 }}>
-              {formatNumber(kpis.top_city.count)} ventas
+              {formatNumber(dashboardData?.kpis.top_city.count || 0)} ventas
             </p>
           </div>
 
@@ -512,10 +465,10 @@ function Dashboard() {
               Tipo Más Vendido
             </h3>
             <p style={{ fontSize: '1.5rem', fontWeight: '700', color: COLORS.pink, margin: 0 }}>
-              {kpis.top_property_type.name}
+              {dashboardData?.kpis.top_property_type.name || 'N/A'}
             </p>
             <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', margin: 0 }}>
-              {formatNumber(kpis.top_property_type.count)} ventas
+              {formatNumber(dashboardData?.kpis.top_property_type.count || 0)} ventas
             </p>
           </div>
         </div>
@@ -639,7 +592,7 @@ function Dashboard() {
             {getChartTitle('Precio Promedio por Ciudad')}
           </h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={priceByTown}>
+            <BarChart data={dashboardData?.charts?.avg_price_by_town || []}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="town" 
@@ -704,7 +657,7 @@ function Dashboard() {
             {getChartTitle('Volumen por Tipo de Propiedad')}
           </h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={propertyTypeAnalysis}>
+            <BarChart data={dashboardData?.charts?.property_type_analysis || []}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="property_type" 
@@ -755,7 +708,7 @@ function Dashboard() {
             {getChartTitle('Tendencias de Precio por Año')}
           </h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={yearlyTrends}>
+            <LineChart data={dashboardData?.charts?.yearly_trends || []}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="year" fontSize={12} />
               <YAxis 
@@ -809,14 +762,14 @@ function Dashboard() {
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
-                data={salesRatioDistribution}
+                data={dashboardData?.charts?.sales_ratio_distribution || []}
                 cx="50%"
                 cy="50%"
                 outerRadius={80}
                 dataKey="count"
                 label={({ range, percentage }) => `${range}: ${percentage.toFixed(1)}%`}
               >
-                {salesRatioDistribution.map((entry, index) => (
+                {(dashboardData?.charts?.sales_ratio_distribution || []).map((_, index: number) => (
                   <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                 ))}
               </Pie>
@@ -857,7 +810,7 @@ function Dashboard() {
             {getChartTitle('Distribución de Tiempo hasta Venta')}
           </h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={timeToSellDistribution}>
+            <BarChart data={dashboardData?.charts?.time_to_sell_distribution || []}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="range" 
@@ -905,7 +858,7 @@ function Dashboard() {
             {getChartTitle('Top 10 Ciudades por Volumen de Ventas')}
           </h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={topCities}>
+            <BarChart data={dashboardData?.charts?.top_cities_by_volume || []}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="town" 
@@ -977,7 +930,7 @@ function Dashboard() {
                   {getChartTitle('Precio Promedio por Ciudad')} - Vista Expandida
                 </h2>
                 <ResponsiveContainer width="100%" height={500}>
-                  <BarChart data={priceByTown}>
+                  <BarChart data={dashboardData?.charts?.avg_price_by_town || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="town" 
@@ -1020,7 +973,7 @@ function Dashboard() {
                   {getChartTitle('Volumen por Tipo de Propiedad')} - Vista Expandida
                 </h2>
                 <ResponsiveContainer width="100%" height={500}>
-                  <BarChart data={propertyTypeAnalysis}>
+                  <BarChart data={dashboardData?.charts.property_type_analysis || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="property_type" 
@@ -1049,7 +1002,7 @@ function Dashboard() {
                   {getChartTitle('Tendencias de Precio por Año')} - Vista Expandida
                 </h2>
                 <ResponsiveContainer width="100%" height={500}>
-                  <LineChart data={yearlyTrends}>
+                  <LineChart data={dashboardData?.charts.yearly_trends || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="year" fontSize={14} />
                     <YAxis 
@@ -1081,14 +1034,14 @@ function Dashboard() {
                 <ResponsiveContainer width="100%" height={500}>
                   <PieChart>
                     <Pie
-                      data={salesRatioDistribution}
+                      data={dashboardData?.charts.sales_ratio_distribution || []}
                       cx="50%"
                       cy="50%"
                       outerRadius={150}
                       dataKey="count"
                       label={({ range, percentage }) => `${range}: ${percentage.toFixed(1)}%`}
                     >
-                      {salesRatioDistribution.map((entry, index) => (
+                      {(dashboardData?.charts.sales_ratio_distribution || []).map((_, index: number) => (
                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                       ))}
                     </Pie>
@@ -1107,7 +1060,7 @@ function Dashboard() {
                   {getChartTitle('Distribución de Tiempo hasta Venta')} - Vista Expandida
                 </h2>
                 <ResponsiveContainer width="100%" height={500}>
-                  <BarChart data={timeToSellDistribution}>
+                  <BarChart data={dashboardData?.charts.time_to_sell_distribution || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="range" 
@@ -1133,7 +1086,7 @@ function Dashboard() {
                   {getChartTitle('Top 10 Ciudades por Volumen de Ventas')} - Vista Expandida
                 </h2>
                 <ResponsiveContainer width="100%" height={500}>
-                  <BarChart data={topCities}>
+                  <BarChart data={dashboardData?.charts.top_cities_by_volume || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="town" 
@@ -1175,7 +1128,7 @@ function Dashboard() {
           ¿Quieres explorar las propiedades?
         </h3>
         <Link
-          to="/properties"
+          to="/"
           style={{
             backgroundColor: COLORS.primary,
             color: 'white',
