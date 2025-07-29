@@ -165,3 +165,45 @@ dist
 .svelte-kit
 
 # End of https://www.toptal.com/developers/gitignore/api/go,node
+
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+### Development Files ###
+# Vite cache
+.vite/
+# Frontend build cache
+frontend/.vite/
+# Development logs
+*.log
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+### Data Files ###
+# Large CSV files (optional - uncomment if you don't want to include data)
+# *.csv

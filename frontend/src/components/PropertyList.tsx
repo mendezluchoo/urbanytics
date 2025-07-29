@@ -1,7 +1,7 @@
 // src/components/PropertyList.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { apiService } from '../services/api';
 
 // Tipos de datos para las propiedades
 type Property = {
@@ -55,110 +55,73 @@ function PropertyList() {
   const [sortBy, setSortBy] = useState<string>('serial_number');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // Función para obtener las ciudades
-  const fetchCities = async () => {
+  // Cargar filtros disponibles desde el BFF
+  const loadFilters = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/cities');
-      setCities(response.data);
+      const filtersData = await apiService.getPropertyFilters();
+      setCities(filtersData.data.cities || []);
+      setPropertyTypes(filtersData.data.property_types || []);
+      setResidentialTypes(filtersData.data.residential_types || []);
+      setListYears(filtersData.data.list_years || []);
     } catch (err) {
-      console.error('Error fetching cities:', err);
+      console.error('Error cargando filtros:', err);
     }
   };
 
-  // Función para obtener los tipos de propiedad
-  const fetchPropertyTypes = async () => {
-    try {
-      const response = await axios.get('http://localhost:8080/property-types');
-      setPropertyTypes(response.data);
-    } catch (err) {
-      console.error('Error fetching property types:', err);
-    }
-  };
-
-  // Función para obtener los tipos residenciales
-  const fetchResidentialTypes = async () => {
-    try {
-      const response = await axios.get('http://localhost:8080/residential-types');
-      setResidentialTypes(response.data);
-    } catch (err) {
-      console.error('Error fetching residential types:', err);
-    }
-  };
-
-  // Función para obtener los años de listado
-  const fetchListYears = async () => {
-    try {
-      const response = await axios.get('http://localhost:8080/list-years');
-      setListYears(response.data);
-    } catch (err) {
-      console.error('Error fetching list years:', err);
-    }
-  };
-
-  // Función para obtener las propiedades desde la API
-  const fetchProperties = async (page: number = 1, searchFilters = filters) => {
+  // Cargar propiedades desde el BFF
+  const fetchProperties = useCallback(async (page: number = 1, searchFilters = filters) => {
     setLoading(true);
     setError(null);
-    
     try {
-      // Construir parámetros de consulta
+      // Construir parámetros de consulta con mapeo correcto
       const params = {
         page,
-        limit: 12, // Mostrar 12 propiedades por página
+        limit: 12,
         sort_by: sortBy,
         sort_order: sortOrder,
-        ...searchFilters
+        town: searchFilters.town,
+        min_price: searchFilters.min_price,
+        max_price: searchFilters.max_price,
+        property_type: searchFilters.property_type,
+        residential_type: searchFilters.residential_type,
+        list_year: searchFilters.list_year,
+        min_sales_ratio: searchFilters.min_sales_ratio,
+        max_sales_ratio: searchFilters.max_sales_ratio,
+        min_years_until_sold: searchFilters.min_years_until_sold,
+        max_years_until_sold: searchFilters.max_years_until_sold
       };
-
       // Limpiar parámetros vacíos
       Object.keys(params).forEach(key => {
         if (params[key as keyof typeof params] === '') {
           delete params[key as keyof typeof params];
         }
       });
-
-      const response = await axios.get('http://localhost:8080/properties', { params });
-      
-      // Manejar la nueva estructura de respuesta con metadata
-      if (response.data.data && response.data.pagination) {
-        // Nueva estructura con metadata
-        setProperties(response.data.data);
-        setTotalPages(response.data.pagination.total_pages);
-        setTotalCount(response.data.pagination.total_count);
-      } else {
-        // Estructura antigua (fallback)
-        setProperties(response.data);
-        setTotalPages(Math.ceil(response.data.length / 12));
-        setTotalCount(response.data.length);
-      }
-      
+      const result = await apiService.getProperties(params);
+      setProperties(result.data);
+      setTotalPages(result.pagination.total_pages);
+      setTotalCount(result.pagination.total_count);
     } catch (err) {
       setError('Error al cargar las propiedades. Por favor, intenta de nuevo.');
       console.error('Error fetching properties:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, sortBy, sortOrder]);
 
   // Efecto para cargar datos iniciales
   useEffect(() => {
-    fetchCities();
-    fetchPropertyTypes();
-    fetchResidentialTypes();
-    fetchListYears();
+    loadFilters();
     fetchProperties(currentPage, filters);
-  }, [currentPage]);
+  }, [currentPage, filters, fetchProperties]);
 
   // Función para manejar cambios en los filtros
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
-    // Si se cambia el tipo de propiedad y no es "Residential", limpiar el tipo residencial
     if (name === 'property_type' && value !== 'Residential') {
       setFilters(prev => ({
         ...prev,
         [name]: value,
-        residential_type: '' // Limpiar el filtro de tipo residencial
+        residential_type: ''
       }));
     } else {
       setFilters(prev => ({
@@ -170,7 +133,7 @@ function PropertyList() {
 
   // Función para aplicar filtros
   const handleSearch = () => {
-    setCurrentPage(1); // Resetear a la primera página
+    setCurrentPage(1);
     fetchProperties(1, filters);
   };
 
@@ -192,8 +155,6 @@ function PropertyList() {
     setCurrentPage(1);
     fetchProperties(1, clearedFilters);
   };
-
-
 
   // Función para formatear precio
   const formatPrice = (price: number) => {

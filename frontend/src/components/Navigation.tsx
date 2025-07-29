@@ -60,32 +60,46 @@ const Navigation = () => {
             alignItems: 'center'
           }}>
             <Link
-              to="/"
+              to="/app"
               style={{
-                color: isActive('/') ? 'var(--primary-color)' : 'var(--text-secondary)',
+                color: isActive('/app') ? 'var(--primary-color)' : 'var(--text-secondary)',
                 textDecoration: 'none',
-                fontWeight: isActive('/') ? '600' : '400',
+                fontWeight: isActive('/app') ? '600' : '400',
                 padding: '0.5rem 1rem',
                 borderRadius: '8px',
                 transition: 'all 0.2s ease',
-                backgroundColor: isActive('/') ? 'rgba(124, 152, 133, 0.1)' : 'transparent'
+                backgroundColor: isActive('/app') ? 'rgba(124, 152, 133, 0.1)' : 'transparent'
               }}
             >
               Propiedades
             </Link>
             <Link
-              to="/dashboard"
+              to="/app/dashboard"
               style={{
-                color: isActive('/dashboard') ? 'var(--primary-color)' : 'var(--text-secondary)',
+                color: isActive('/app/dashboard') ? 'var(--primary-color)' : 'var(--text-secondary)',
                 textDecoration: 'none',
-                fontWeight: isActive('/dashboard') ? '600' : '400',
+                fontWeight: isActive('/app/dashboard') ? '600' : '400',
                 padding: '0.5rem 1rem',
                 borderRadius: '8px',
                 transition: 'all 0.2s ease',
-                backgroundColor: isActive('/dashboard') ? 'rgba(124, 152, 133, 0.1)' : 'transparent'
+                backgroundColor: isActive('/app/dashboard') ? 'rgba(124, 152, 133, 0.1)' : 'transparent'
               }}
             >
               Dashboard
+            </Link>
+            <Link
+              to="/app/machine-learning"
+              style={{
+                color: isActive('/app/machine-learning') ? 'var(--primary-color)' : 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontWeight: isActive('/app/machine-learning') ? '600' : '400',
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                transition: 'all 0.2s ease',
+                backgroundColor: isActive('/app/machine-learning') ? 'rgba(124, 152, 133, 0.1)' : 'transparent'
+              }}
+            >
+              🤖 ML
             </Link>
           </div>
         </div>
@@ -100,34 +114,49 @@ const Navigation = () => {
           borderTop: '1px solid var(--border-color)'
         }}>
           <Link
-            to="/"
+            to="/app"
             onClick={() => setIsMenuOpen(false)}
             style={{
-              color: isActive('/') ? 'var(--primary-color)' : 'var(--text-secondary)',
+              color: isActive('/app') ? 'var(--primary-color)' : 'var(--text-secondary)',
               textDecoration: 'none',
-              fontWeight: isActive('/') ? '600' : '400',
+              fontWeight: isActive('/app') ? '600' : '400',
               padding: '0.75rem 1rem',
               borderRadius: '8px',
               transition: 'all 0.2s ease',
-              backgroundColor: isActive('/') ? 'rgba(124, 152, 133, 0.1)' : 'transparent'
+              backgroundColor: isActive('/app') ? 'rgba(124, 152, 133, 0.1)' : 'transparent'
             }}
           >
             Propiedades
           </Link>
           <Link
-            to="/dashboard"
+            to="/app/dashboard"
             onClick={() => setIsMenuOpen(false)}
             style={{
-              color: isActive('/dashboard') ? 'var(--primary-color)' : 'var(--text-secondary)',
+              color: isActive('/app/dashboard') ? 'var(--primary-color)' : 'var(--text-secondary)',
               textDecoration: 'none',
-              fontWeight: isActive('/dashboard') ? '600' : '400',
+              fontWeight: isActive('/app/dashboard') ? '600' : '400',
               padding: '0.75rem 1rem',
               borderRadius: '8px',
               transition: 'all 0.2s ease',
-              backgroundColor: isActive('/dashboard') ? 'rgba(124, 152, 133, 0.1)' : 'transparent'
+              backgroundColor: isActive('/app/dashboard') ? 'rgba(124, 152, 133, 0.1)' : 'transparent'
             }}
           >
             Dashboard
+          </Link>
+          <Link
+            to="/app/machine-learning"
+            onClick={() => setIsMenuOpen(false)}
+            style={{
+              color: isActive('/app/machine-learning') ? 'var(--primary-color)' : 'var(--text-secondary)',
+              textDecoration: 'none',
+              fontWeight: isActive('/app/machine-learning') ? '600' : '400',
+              padding: '0.75rem 1rem',
+              borderRadius: '8px',
+              transition: 'all 0.2s ease',
+              backgroundColor: isActive('/app/machine-learning') ? 'rgba(124, 152, 133, 0.1)' : 'transparent'
+            }}
+          >
+            🤖 Machine Learning
           </Link>
         </div>
       </div>

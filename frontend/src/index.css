@@ -1,4 +1,4 @@
-/* Estilos globales con paleta de colores relajados */
+/* Estilos globales con paleta de colores relajados y mejor contraste */
 :root {
   /* Paleta de colores relajados - tonos suaves y naturales */
   --primary-color: #7c9885;      /* Verde sage suave */
@@ -6,12 +6,18 @@
   --accent-color: #d4a574;       /* Beige cálido */
   --background-color: #f8f9fa;   /* Gris muy claro */
   --surface-color: #ffffff;      /* Blanco puro */
-  --text-primary: #2c3e50;       /* Azul gris oscuro */
-  --text-secondary: #6c757d;     /* Gris medio */
-  --border-color: #e9ecef;       /* Gris muy claro para bordes */
-  --shadow-color: rgba(0, 0, 0, 0.08); /* Sombra sutil */
-  --error-color: #e74c3c;        /* Rojo suave */
-  --success-color: #27ae60;      /* Verde suave */
+  --text-primary: #1a202c;       /* Azul gris muy oscuro - mejor contraste */
+  --text-secondary: #4a5568;     /* Gris más oscuro - mejor contraste */
+  --border-color: #e2e8f0;       /* Gris claro para bordes */
+  --shadow-color: rgba(0, 0, 0, 0.1); /* Sombra más visible */
+  --error-color: #e53e3e;        /* Rojo más intenso */
+  --success-color: #38a169;      /* Verde más intenso */
+  
+  /* Colores adicionales para mejor contraste */
+  --text-muted: #718096;         /* Texto secundario alternativo */
+  --text-light: #a0aec0;         /* Texto muy claro para elementos secundarios */
+  --surface-hover: #f7fafc;      /* Fondo para hover */
+  --border-hover: #cbd5e0;       /* Borde para hover */
 }
 
 * {
