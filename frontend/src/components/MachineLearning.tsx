@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiService } from '../services/api';
 import './MachineLearning.css';
 
 // Tipos para el formulario de ML
@@ -55,36 +56,91 @@ const MachineLearning: React.FC = () => {
     setPrediction(null);
 
     try {
-      // Simular llamada a API de ML (por ahora)
-      // const result = await apiService.predictPropertyPrice(formData);
+      // Validar datos requeridos
+      if (!formData.assessed_value || !formData.property_type || !formData.town) {
+        setError('Por favor, completa todos los campos requeridos.');
+        return;
+      }
+
+      // Llamar al servicio real de ML
+      const result = await apiService.predictPropertyPrice({
+        property_type: formData.property_type,
+        residential_type: formData.residential_type,
+        town: formData.town,
+        list_year: formData.list_year,
+        assessed_value: formData.assessed_value,
+        years_until_sold: formData.years_until_sold
+      });
+
+      if (!result.success) {
+        setError(result.error || 'Error al procesar la predicción.');
+        return;
+      }
+
+      // Debug: ver qué devuelve el servicio
       
-      // Simulación de respuesta
-      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const mockPrediction: MLPrediction = {
-        predicted_price: Math.round(formData.assessed_value * (0.8 + Math.random() * 0.4)),
-        confidence: 85 + Math.random() * 10,
-        factors: [
-          'Ubicación geográfica',
-          'Tipo de propiedad',
-          'Valor tasado',
-          'Ratio de venta histórico',
-          'Tendencias del mercado'
-        ],
+      // Verificar estructura de respuesta
+      if (!result.data) {
+        setError('Respuesta inesperada del servicio de ML');
+        return;
+      }
+      
+      // Formatear respuesta del ML
+      const prediction: MLPrediction = {
+        predicted_price: result.data.predicted_price || 0,
+        confidence: (result.data.confidence_score || 0.85) * 100,
+        factors: generateFactorsFromData(formData, result.data),
         model_info: {
           name: 'Random Forest Regression',
-          version: '2.1.0',
+          version: result.data.model_version || '1.0.0',
           accuracy: 94.2
         }
       };
 
-      setPrediction(mockPrediction);
-    } catch (err) {
-      setError('Error al procesar la predicción. Por favor, intenta de nuevo.');
+      setPrediction(prediction);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al procesar la predicción. Por favor, intenta de nuevo.';
+      setError(errorMessage);
       console.error('ML Prediction Error:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Función para generar factores dinámicos basados en los datos reales
+  const generateFactorsFromData = (inputData: MLFormData, prediction: { 
+    predicted_price: number; 
+    price_ratio?: number;
+    assessed_value?: number;
+  }): string[] => {
+    const factors: string[] = [];
+    
+    // Agregar factores basados en los datos reales
+    if (inputData.town) {
+      factors.push(`Ubicación: ${inputData.town}`);
+    }
+    
+    if (inputData.property_type) {
+      factors.push(`Tipo de propiedad: ${inputData.property_type}`);
+    }
+    
+    if (inputData.residential_type) {
+      factors.push(`Tipo residencial: ${inputData.residential_type}`);
+    }
+    
+    factors.push(`Valor tasado: $${inputData.assessed_value.toLocaleString()}`);
+    factors.push(`Año de listado: ${inputData.list_year}`);
+    
+    if (inputData.years_until_sold > 0) {
+      factors.push(`Tiempo hasta venta: ${inputData.years_until_sold} años`);
+    }
+    
+    // Agregar factor de ratio de precio
+    const priceRatio = prediction.price_ratio || (prediction.predicted_price / inputData.assessed_value);
+    factors.push(`Ratio precio predicho/tasado: ${(priceRatio * 100).toFixed(1)}%`);
+    
+    return factors;
   };
 
   const formatPrice = (price: number): string => {
@@ -136,6 +192,8 @@ const MachineLearning: React.FC = () => {
                   name="residential_type"
                   value={formData.residential_type}
                   onChange={handleInputChange}
+                  disabled={formData.property_type !== 'Residential'}
+                  className={formData.property_type !== 'Residential' ? 'disabled-field' : ''}
                 >
                   <option value="">Seleccionar tipo</option>
                   <option value="Single Family">Casa Familiar</option>
@@ -143,6 +201,9 @@ const MachineLearning: React.FC = () => {
                   <option value="Multi Family">Multifamiliar</option>
                   <option value="Townhouse">Townhouse</option>
                 </select>
+                {formData.property_type !== 'Residential' && (
+                  <small className="field-note">Solo disponible para propiedades residenciales</small>
+                )}
               </div>
 
               <div className="form-group">
@@ -194,11 +255,14 @@ const MachineLearning: React.FC = () => {
                   name="sales_ratio"
                   value={formData.sales_ratio}
                   onChange={handleInputChange}
-                  placeholder="Ej: 95.5"
+                  placeholder="Calculado automáticamente"
                   min="0"
                   max="200"
                   step="0.1"
+                  disabled
+                  className="disabled-field"
                 />
+                <small className="field-note">Calculado automáticamente por el modelo</small>
               </div>
 
               <div className="form-group">
@@ -209,11 +273,14 @@ const MachineLearning: React.FC = () => {
                   name="years_until_sold"
                   value={formData.years_until_sold}
                   onChange={handleInputChange}
-                  placeholder="Ej: 2.5"
+                  placeholder="Calculado automáticamente"
                   min="0"
                   max="20"
                   step="0.1"
+                  disabled
+                  className="disabled-field"
                 />
+                <small className="field-note">Calculado automáticamente por el modelo</small>
               </div>
             </div>
 
@@ -259,6 +326,28 @@ const MachineLearning: React.FC = () => {
                 </div>
               </div>
               <p>Analizando datos y generando predicción...</p>
+            </div>
+          )}
+
+          {!loading && !prediction && !error && (
+            <div className="empty-state">
+              <div className="empty-icon"></div>
+              <h3>¿Listo para predecir?</h3>
+              <p>Completa los datos de la propiedad y obtén una predicción inteligente de su valor de mercado.</p>
+              <div className="empty-features">
+                <div className="feature-item">
+                  <span className="feature-icon">🎯</span>
+                  <span>Predicción precisa basada en datos históricos</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-icon">📊</span>
+                  <span>Análisis de múltiples factores del mercado</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-icon">🤖</span>
+                  <span>Modelo de IA entrenado con datos reales</span>
+                </div>
+              </div>
             </div>
           )}
 

@@ -1,10 +1,10 @@
 /**
  * Configuración de base de datos para el BFF
- * Maneja la conexión con PostgreSQL y Redis para caché
+ * Maneja conexiones con PostgreSQL y Redis
  */
 
 const { Pool } = require('pg');
-const Redis = require('redis');
+// const Redis = require('ioredis');
 
 // Configuración de PostgreSQL
 const postgresConfig = {
@@ -18,55 +18,25 @@ const postgresConfig = {
   connectionTimeoutMillis: 2000,
 };
 
-// Configuración de Redis para caché
-const redisConfig = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD || null,
-  retry_strategy: (options) => {
-    if (options.error && options.error.code === 'ECONNREFUSED') {
-      // End server sent fail after 5 retries
-      return new Error('The server refused the connection');
-    }
-    if (options.total_retry_time > 1000 * 60 * 60) {
-      // End retry after a specific timeout
-      return new Error('Retry time exhausted');
-    }
-    if (options.attempt > 10) {
-      // End reconnecting with built in error
-      return undefined;
-    }
-    // Reconnect after
-    return Math.min(options.attempt * 100, 3000);
-  }
-};
+// Configuración de Redis (temporalmente deshabilitado)
+const redisConfig = {};
 
 // Crear pool de conexiones PostgreSQL
 const postgresPool = new Pool(postgresConfig);
 
-// Crear cliente Redis
-const redisClient = Redis.createClient(redisConfig);
+// Cliente Redis (temporalmente deshabilitado)
+const redisClient = null;
 
-// Manejar eventos de Redis
-redisClient.on('error', (err) => {
-  console.warn('Redis Client Error:', err);
-});
+// Función para crear cliente Redis
+const createRedisClient = () => {
+  // Temporalmente deshabilitado
+  return null;
+};
 
-redisClient.on('connect', () => {
-  console.log('✅ Redis conectado exitosamente');
-});
-
-redisClient.on('ready', () => {
-  console.log('✅ Redis listo para recibir comandos');
-});
-
-// Función para conectar Redis
+// Función para conectar a Redis
 const connectRedis = async () => {
-  try {
-    await redisClient.connect();
-  } catch (error) {
-    console.warn('⚠️ No se pudo conectar a Redis, continuando sin caché:', error.message);
-  }
+  console.log('⚠️ Redis deshabilitado temporalmente');
+  return null;
 };
 
 // Función para verificar la conexión a PostgreSQL
@@ -87,7 +57,9 @@ const testPostgresConnection = async () => {
 const closeConnections = async () => {
   try {
     await postgresPool.end();
-    await redisClient.quit();
+    if (redisClient) {
+      await redisClient.quit();
+    }
     console.log('✅ Conexiones cerradas exitosamente');
   } catch (error) {
     console.error('❌ Error cerrando conexiones:', error.message);
@@ -96,7 +68,8 @@ const closeConnections = async () => {
 
 module.exports = {
   postgresPool,
-  redisClient,
+  redisClient: () => redisClient,
+  createRedisClient,
   connectRedis,
   testPostgresConnection,
   closeConnections

@@ -13,7 +13,6 @@ const rateLimit = require('express-rate-limit');
 
 // Importar configuración y servicios
 const { 
-  connectRedis, 
   testPostgresConnection, 
   closeConnections 
 } = require('./config/database');
@@ -21,6 +20,9 @@ const {
 // Importar rutas
 const propertiesRoutes = require('./routes/properties');
 const analyticsRoutes = require('./routes/analytics');
+const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
+const mlRoutes = require('./routes/ml');
 
 // Configuración de la aplicación
 const app = express();
@@ -116,11 +118,14 @@ app.get('/info', (req, res) => {
         'Logging estructurado',
         'Monitoreo de salud'
       ],
-      endpoints: {
-        properties: '/api/properties',
-        analytics: '/api/analytics',
-        health: '/health'
-      },
+              endpoints: {
+          properties: '/api/properties',
+          analytics: '/api/analytics',
+          auth: '/api/auth',
+          admin: '/api/admin',
+          ml: '/api/ml',
+          health: '/health'
+        },
       timestamp: new Date().toISOString()
     }
   });
@@ -129,6 +134,9 @@ app.get('/info', (req, res) => {
 // Configurar rutas de la API
 app.use('/api/properties', propertiesRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/ml', mlRoutes);
 
 // Middleware para rutas no encontradas
 app.use('*', (req, res) => {
@@ -136,12 +144,15 @@ app.use('*', (req, res) => {
     success: false,
     error: 'Endpoint no encontrado',
     message: `La ruta ${req.originalUrl} no existe`,
-    available_endpoints: {
-      health: '/health',
-      info: '/info',
-      properties: '/api/properties',
-      analytics: '/api/analytics'
-    }
+            available_endpoints: {
+          health: '/health',
+          info: '/info',
+          properties: '/api/properties',
+          analytics: '/api/analytics',
+          auth: '/api/auth',
+          admin: '/api/admin',
+          ml: '/api/ml'
+        }
   });
 });
 
@@ -150,8 +161,8 @@ const initializeServer = async () => {
   try {
     console.log('🚀 Iniciando BFF de Urbanytics...');
 
-    // Conectar a Redis
-    await connectRedis();
+    // Redis deshabilitado temporalmente
+    console.log('⚠️ Redis deshabilitado temporalmente, usando solo caché en memoria');
 
     // Verificar conexión a PostgreSQL
     const postgresConnected = await testPostgresConnection();
@@ -166,6 +177,9 @@ const initializeServer = async () => {
       console.log(`ℹ️  Info: http://localhost:${PORT}/info`);
       console.log(`🏠 API Properties: http://localhost:${PORT}/api/properties`);
       console.log(`📈 API Analytics: http://localhost:${PORT}/api/analytics`);
+      console.log(`🔐 API Auth: http://localhost:${PORT}/api/auth`);
+      console.log(`⚙️ API Admin: http://localhost:${PORT}/api/admin`);
+      console.log(`🤖 API ML: http://localhost:${PORT}/api/ml`);
       console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
     });
 

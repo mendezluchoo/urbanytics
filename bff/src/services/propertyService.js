@@ -5,6 +5,7 @@
 
 const { postgresPool } = require('../config/database');
 const { setCache, getFromCache, generateCacheKey, invalidateCache } = require('./cacheService');
+const backendService = require('./backendService');
 
 /**
  * Obtiene propiedades con filtros avanzados y paginación optimizada
@@ -14,182 +15,25 @@ const { setCache, getFromCache, generateCacheKey, invalidateCache } = require('.
  * @returns {Promise<object>} - Propiedades y metadatos de paginación
  */
 const getProperties = async (filters = {}, pagination = {}, sorting = {}) => {
-  const {
-    town,
-    minPrice,
-    maxPrice,
-    propertyType,
-    residentialType,
-    listYear,
-    minSalesRatio,
-    maxSalesRatio,
-    minYearsUntilSold,
-    maxYearsUntilSold
-  } = filters;
-
-  const {
-    page = 1,
-    limit = 10
-  } = pagination;
-
-  const {
-    sortBy = 'serial_number',
-    sortOrder = 'asc'
-  } = sorting;
-
-  const offset = (page - 1) * limit;
-
-  // Generar clave de caché
-  const cacheKey = generateCacheKey('properties', {
-    ...filters,
-    ...pagination,
-    ...sorting
-  });
-
-  // Intentar obtener del caché
-  const cachedResult = await getFromCache(cacheKey);
-  if (cachedResult) {
-    return cachedResult;
-  }
-
-  // Construir consulta optimizada
-  const baseQuery = `
-    SELECT 
-      serial_number,
-      list_year,
-      date_recorded,
-      town,
-      address,
-      assessed_value,
-      sale_amount,
-      sales_ratio,
-      property_type,
-      residential_type,
-      years_until_sold
-    FROM properties
-  `;
-
-  const conditions = [];
-  const args = [];
-  let argId = 1;
-
-  // Aplicar filtros
-  if (town) {
-    conditions.push(`town ILIKE $${argId}`);
-    args.push(`%${town}%`);
-    argId++;
-  }
-
-  if (minPrice) {
-    conditions.push(`sale_amount >= $${argId}`);
-    args.push(parseFloat(minPrice));
-    argId++;
-  }
-
-  if (maxPrice) {
-    conditions.push(`sale_amount <= $${argId}`);
-    args.push(parseFloat(maxPrice));
-    argId++;
-  }
-
-  if (propertyType) {
-    conditions.push(`property_type = $${argId}`);
-    args.push(propertyType);
-    argId++;
-  }
-
-  if (residentialType) {
-    conditions.push(`residential_type = $${argId}`);
-    args.push(residentialType);
-    argId++;
-  }
-
-  if (listYear) {
-    conditions.push(`list_year = $${argId}`);
-    args.push(parseInt(listYear));
-    argId++;
-  }
-
-  if (minSalesRatio) {
-    conditions.push(`sales_ratio >= $${argId}`);
-    args.push(parseFloat(minSalesRatio));
-    argId++;
-  }
-
-  if (maxSalesRatio) {
-    conditions.push(`sales_ratio <= $${argId}`);
-    args.push(parseFloat(maxSalesRatio));
-    argId++;
-  }
-
-  if (minYearsUntilSold) {
-    conditions.push(`years_until_sold >= $${argId}`);
-    args.push(parseInt(minYearsUntilSold));
-    argId++;
-  }
-
-  if (maxYearsUntilSold) {
-    conditions.push(`years_until_sold <= $${argId}`);
-    args.push(parseInt(maxYearsUntilSold));
-    argId++;
-  }
-
-  // Validar campos de ordenamiento
-  const validSortFields = [
-    'serial_number', 'sale_amount', 'list_year', 'sales_ratio',
-    'years_until_sold', 'town', 'property_type', 'residential_type'
-  ];
-
-  const validSortBy = validSortFields.includes(sortBy) ? sortBy : 'serial_number';
-  const validSortOrder = ['asc', 'desc'].includes(sortOrder.toLowerCase()) ? sortOrder.toUpperCase() : 'ASC';
-
-  // Construir WHERE clause
-  const whereClause = conditions.length > 0 ? ` WHERE ${conditions.join(' AND ')}` : '';
-
-  // Consulta para contar total
-  const countQuery = `SELECT COUNT(*) FROM properties${whereClause}`;
-  const countResult = await postgresPool.query(countQuery, args);
-  const totalCount = parseInt(countResult.rows[0].count);
-
-  // Consulta principal con paginación
-  const finalQuery = `
-    ${baseQuery}${whereClause}
-    ORDER BY ${validSortBy} ${validSortOrder}
-    LIMIT $${argId} OFFSET $${argId + 1}
-  `;
-
-  args.push(limit, offset);
-
-  const result = await postgresPool.query(finalQuery, args);
-  const properties = result.rows;
-
-  // Calcular metadatos de paginación
-  const totalPages = Math.ceil(totalCount / limit);
-  const hasNextPage = page < totalPages;
-  const hasPrevPage = page > 1;
-
-  const response = {
-    data: properties,
-    pagination: {
-      current_page: page,
-      total_pages: totalPages,
-      total_count: totalCount,
-      limit,
-      offset,
-      has_next_page: hasNextPage,
-      has_prev_page: hasPrevPage
-    },
-    filters: filters,
-    sorting: {
-      sort_by: validSortBy,
-      sort_order: validSortOrder.toLowerCase()
+  try {
+    const params = {
+      page: pagination.page || 1,
+      limit: pagination.limit || 10,
+      sort_by: sorting.sortBy || 'serial_number',
+      sort_order: sorting.sortOrder || 'asc',
+      ...filters
+    };
+    
+    const response = await backendService.getProperties(params);
+    
+    if (response.success) {
+      return response.data;
+    } else {
+      throw new Error(response.error);
     }
-  };
-
-  // Cachear resultado por 5 minutos
-  await setCache(cacheKey, response, 300);
-
-  return response;
+  } catch (error) {
+    throw error;
+  }
 };
 
 /**

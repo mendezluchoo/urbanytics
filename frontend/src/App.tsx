@@ -16,6 +16,9 @@ function App() {
         {/* Ruta principal - Landing Page */}
         <Route path="/" element={<LandingPage />} />
         
+        {/* Ruta directa para propiedades (para compatibilidad) */}
+        <Route path="/properties/:id" element={<PropertyDetail />} />
+        
         {/* Rutas con navegación */}
         <Route path="/app/*" element={
           <>

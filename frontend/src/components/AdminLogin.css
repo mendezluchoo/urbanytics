@@ -15,7 +15,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--pastel-purple);
   z-index: -2;
 }
 
@@ -41,12 +41,11 @@
 
 /* Login Card */
 .login-card {
-  background: white;
+  background: var(--surface-color);
   padding: 3rem;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  border: 1px solid var(--border-color);
   max-width: 500px;
 }
 
@@ -146,10 +145,10 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 1rem 2rem;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 50px;
+  border-radius: 12px;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
@@ -159,7 +158,8 @@
 
 .login-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px var(--shadow-color);
+  background: var(--accent-color);
 }
 
 .login-button:disabled {
@@ -191,10 +191,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 1rem;
-  background: #fee;
-  border: 1px solid #fcc;
-  border-radius: 10px;
-  color: #c33;
+  background: var(--pastel-pink);
+  border: 1px solid var(--error-color);
+  border-radius: 12px;
+  color: var(--error-color);
   margin-bottom: 1rem;
 }
 
@@ -210,9 +210,9 @@
 }
 
 .demo-credentials {
-  background: #f8f9fa;
+  background: var(--pastel-yellow);
   padding: 1rem;
-  border-radius: 10px;
+  border-radius: 12px;
   margin-bottom: 1rem;
 }
 

@@ -14,6 +14,11 @@ services:
       - ./postgres-data:/var/lib/postgresql/data
     networks:
       - urbanytics_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user_urbanytics -d db_urbanytics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   redis:
     image: redis:7-alpine
@@ -25,6 +30,54 @@ services:
     networks:
       - urbanytics_network
     command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: urbanytics_backend
+    environment:
+      DB_CONN_STR: postgresql://user_urbanytics:password_urbanytics@db:5432/db_urbanytics
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      PORT: 8080
+      NODE_ENV: development
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - urbanytics_network
+    restart: unless-stopped
+
+  ml_service:
+    build:
+      context: ./ml_service
+      dockerfile: Dockerfile
+    container_name: urbanytics_ml
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: db_urbanytics
+      DB_USER: user_urbanytics
+      DB_PASSWORD: password_urbanytics
+      FLASK_ENV: development
+      FLASK_APP: app.py
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - urbanytics_network
+    restart: unless-stopped
+    volumes:
+      - ./ml_service/models:/app/models
 
   bff:
     build:
@@ -34,6 +87,8 @@ services:
     environment:
       NODE_ENV: development
       BFF_PORT: 3001
+      BACKEND_URL: http://backend:8080
+      ML_SERVICE_URL: http://ml_service:5000
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       POSTGRES_DB: db_urbanytics
@@ -45,8 +100,14 @@ services:
     ports:
       - "3001:3001"
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_started
+      ml_service:
+        condition: service_started
     networks:
       - urbanytics_network
     restart: unless-stopped

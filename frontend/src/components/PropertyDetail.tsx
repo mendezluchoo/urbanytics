@@ -175,7 +175,7 @@ function PropertyDetail() {
             La propiedad que buscas no existe o ha sido eliminada.
           </p>
           <Link
-            to="/"
+            to="/app"
             style={{
               backgroundColor: 'var(--primary-color)',
               color: 'white',
@@ -208,7 +208,7 @@ function PropertyDetail() {
       {/* Botón de regreso */}
       <div style={{ marginBottom: '2rem' }}>
         <Link
-          to="/"
+          to="/app"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -460,7 +460,7 @@ function PropertyDetail() {
           flexWrap: 'wrap'
         }}>
           <Link
-            to="/"
+            to="/app"
             style={{
               backgroundColor: 'var(--primary-color)',
               color: 'white',
@@ -488,7 +488,7 @@ function PropertyDetail() {
             Ver más propiedades
           </Link>
           <Link
-            to="/dashboard"
+            to="/app/dashboard"
             style={{
               backgroundColor: 'transparent',
               color: 'var(--text-secondary)',

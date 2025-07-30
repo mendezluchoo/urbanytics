@@ -1,23 +1,31 @@
-/* Estilos globales con paleta de colores relajados y mejor contraste */
+/* Estilos globales con paleta de colores minimalista y uniforme */
 :root {
-  /* Paleta de colores relajados - tonos suaves y naturales */
-  --primary-color: #7c9885;      /* Verde sage suave */
-  --secondary-color: #a8c5a8;    /* Verde menta claro */
-  --accent-color: #d4a574;       /* Beige cálido */
-  --background-color: #f8f9fa;   /* Gris muy claro */
+  /* Paleta de colores minimalista - tonos pasteles suaves */
+  --primary-color: #6b7280;      /* Gris azulado suave */
+  --secondary-color: #9ca3af;    /* Gris claro */
+  --accent-color: #a78bfa;       /* Púrpura pastel */
+  --background-color: #fafafa;   /* Gris muy claro */
   --surface-color: #ffffff;      /* Blanco puro */
-  --text-primary: #1a202c;       /* Azul gris muy oscuro - mejor contraste */
-  --text-secondary: #4a5568;     /* Gris más oscuro - mejor contraste */
-  --border-color: #e2e8f0;       /* Gris claro para bordes */
-  --shadow-color: rgba(0, 0, 0, 0.1); /* Sombra más visible */
-  --error-color: #e53e3e;        /* Rojo más intenso */
-  --success-color: #38a169;      /* Verde más intenso */
+  --text-primary: #111827;       /* Negro suave - máximo contraste */
+  --text-secondary: #374151;     /* Gris oscuro - buen contraste */
+  --border-color: #e5e7eb;       /* Gris claro para bordes */
+  --shadow-color: rgba(0, 0, 0, 0.08); /* Sombra sutil */
+  --error-color: #ef4444;        /* Rojo suave */
+  --success-color: #10b981;      /* Verde suave */
   
   /* Colores adicionales para mejor contraste */
-  --text-muted: #718096;         /* Texto secundario alternativo */
-  --text-light: #a0aec0;         /* Texto muy claro para elementos secundarios */
-  --surface-hover: #f7fafc;      /* Fondo para hover */
-  --border-hover: #cbd5e0;       /* Borde para hover */
+  --text-muted: #6b7280;         /* Texto secundario */
+  --text-light: #9ca3af;         /* Texto muy claro */
+  --surface-hover: #f9fafb;      /* Fondo para hover */
+  --border-hover: #d1d5db;       /* Borde para hover */
+  
+  /* Colores pasteles adicionales */
+  --pastel-blue: #dbeafe;        /* Azul pastel */
+  --pastel-green: #dcfce7;       /* Verde pastel */
+  --pastel-purple: #f3e8ff;      /* Púrpura pastel */
+  --pastel-pink: #fce7f3;        /* Rosa pastel */
+  --pastel-yellow: #fef3c7;      /* Amarillo pastel */
+  --pastel-orange: #fed7aa;      /* Naranja pastel */
 }
 
 * {

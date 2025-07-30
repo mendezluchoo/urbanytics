@@ -3,7 +3,7 @@
  * Utiliza Redis para almacenar resultados de consultas frecuentes
  */
 
-const { redisClient } = require('../config/database');
+// const { redisClient: getRedisClient } = require('../config/database');
 const NodeCache = require('node-cache');
 
 // Caché en memoria como fallback si Redis no está disponible
@@ -18,19 +18,7 @@ const memoryCache = new NodeCache({
  * @returns {Promise<any>} - Valor almacenado o null si no existe
  */
 const getFromCache = async (key) => {
-  try {
-    // Intentar obtener de Redis primero
-    if (redisClient.isReady) {
-      const value = await redisClient.get(key);
-      if (value) {
-        return JSON.parse(value);
-      }
-    }
-  } catch (error) {
-    console.warn('Error obteniendo de Redis, usando caché en memoria:', error.message);
-  }
-
-  // Fallback a caché en memoria
+  // Usar solo caché en memoria
   return memoryCache.get(key);
 };
 
@@ -41,16 +29,7 @@ const getFromCache = async (key) => {
  * @param {number} ttl - Tiempo de vida en segundos (opcional)
  */
 const setCache = async (key, value, ttl = 300) => {
-  try {
-    // Almacenar en Redis si está disponible
-    if (redisClient.isReady) {
-      await redisClient.setEx(key, ttl, JSON.stringify(value));
-    }
-  } catch (error) {
-    console.warn('Error almacenando en Redis, usando solo caché en memoria:', error.message);
-  }
-
-  // Siempre almacenar en memoria como fallback
+  // Usar solo caché en memoria
   memoryCache.set(key, value, ttl);
 };
 
@@ -59,14 +38,6 @@ const setCache = async (key, value, ttl = 300) => {
  * @param {string} key - Clave del caché
  */
 const deleteFromCache = async (key) => {
-  try {
-    if (redisClient.isReady) {
-      await redisClient.del(key);
-    }
-  } catch (error) {
-    console.warn('Error eliminando de Redis:', error.message);
-  }
-
   memoryCache.del(key);
 };
 
@@ -75,17 +46,6 @@ const deleteFromCache = async (key) => {
  * @param {string} pattern - Patrón para buscar claves (ej: "properties:*")
  */
 const deletePattern = async (pattern) => {
-  try {
-    if (redisClient.isReady) {
-      const keys = await redisClient.keys(pattern);
-      if (keys.length > 0) {
-        await redisClient.del(keys);
-      }
-    }
-  } catch (error) {
-    console.warn('Error eliminando patrón de Redis:', error.message);
-  }
-
   // Para caché en memoria, eliminamos todas las claves que coincidan
   const keys = memoryCache.keys();
   const matchingKeys = keys.filter(key => key.includes(pattern.replace('*', '')));
@@ -96,14 +56,6 @@ const deletePattern = async (pattern) => {
  * Limpia todo el caché
  */
 const clearAllCache = async () => {
-  try {
-    if (redisClient.isReady) {
-      await redisClient.flushAll();
-    }
-  } catch (error) {
-    console.warn('Error limpiando Redis:', error.message);
-  }
-
   memoryCache.flushAll();
 };
 

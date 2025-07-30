@@ -7,15 +7,16 @@ const express = require('express');
 const router = express.Router();
 const propertyService = require('../services/propertyService');
 const { cacheMiddleware } = require('../services/cacheService');
+const backendService = require('../services/backendService');
+const axios = require('axios');
 
 /**
  * GET /api/properties
  * Obtiene propiedades con filtros avanzados y paginación
  * Caché: 5 minutos
  */
-router.get('/', cacheMiddleware('properties', 300), async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    // Extraer parámetros de consulta
     const filters = {
       town: req.query.town,
       minPrice: req.query.min_price,
@@ -23,6 +24,7 @@ router.get('/', cacheMiddleware('properties', 300), async (req, res) => {
       propertyType: req.query.property_type,
       residentialType: req.query.residential_type,
       listYear: req.query.list_year,
+      status: req.query.status,
       minSalesRatio: req.query.min_sales_ratio,
       maxSalesRatio: req.query.max_sales_ratio,
       minYearsUntilSold: req.query.min_years_until_sold,
@@ -39,20 +41,44 @@ router.get('/', cacheMiddleware('properties', 300), async (req, res) => {
       sortOrder: req.query.sort_order || 'asc'
     };
 
-    // Obtener propiedades
-    const result = await propertyService.getProperties(filters, pagination, sorting);
+    // Mapeo explícito de nombres de parámetros para el backend Go
+    const backendParams = {
+      town: filters.town,
+      min_price: filters.minPrice,
+      max_price: filters.maxPrice,
+      property_type: filters.propertyType,
+      residential_type: filters.residentialType,
+      list_year: filters.listYear,
+      status: filters.status,
+      min_sales_ratio: filters.minSalesRatio,
+      max_sales_ratio: filters.maxSalesRatio,
+      min_years_until_sold: filters.minYearsUntilSold,
+      max_years_until_sold: filters.maxYearsUntilSold,
+      page: pagination.page,
+      limit: pagination.limit,
+      sort_by: sorting.sortBy,
+      sort_order: sorting.sortOrder
+    };
+    // Elimina los undefined
+    Object.keys(backendParams).forEach(
+      (key) => backendParams[key] === undefined && delete backendParams[key]
+    );
+
+    const queryString = new URLSearchParams(backendParams).toString();
+    const backendUrl = `http://urbanytics_backend:8080/api/v1/properties?${queryString}`;
+    
+    const backendResponse = await axios.get(backendUrl);
+    const result = backendResponse.data;
 
     res.json({
       success: true,
       data: result.data,
       pagination: result.pagination,
-      filters: result.filters,
-      sorting: result.sorting,
+      filters: filters,
+      sorting: sorting,
       timestamp: new Date().toISOString()
     });
-
   } catch (error) {
-    console.error('Error obteniendo propiedades:', error);
     res.status(500).json({
       success: false,
       error: 'Error interno del servidor',
@@ -296,6 +322,8 @@ router.post('/search', cacheMiddleware('property_search', 300), async (req, res)
     });
   }
 });
+
+
 
 /**
  * GET /api/properties/stats/summary

@@ -727,9 +727,9 @@ function PropertyList() {
           gap: '1.5rem',
           marginBottom: '2rem'
         }}>
-          {properties.map((property) => (
+          {properties.map((property, index) => (
             <Link
-              key={property.serial_number}
+              key={`${property.serial_number}-${index}`}
               to={`/properties/${property.serial_number}`}
               style={{
                 textDecoration: 'none',

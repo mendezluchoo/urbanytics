@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { apiService } from '../services/api';
 import './AdminLogin.css';
 
 const AdminLogin: React.FC = () => {
@@ -25,22 +26,35 @@ const AdminLogin: React.FC = () => {
     setError(null);
 
     try {
-      // Simular autenticación (por ahora)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Credenciales de prueba (en producción esto sería validado por el backend)
-      if (formData.username === 'admin' && formData.password === 'admin123') {
-        // Guardar token de sesión (simulado)
-        localStorage.setItem('adminToken', 'mock-admin-token');
-        localStorage.setItem('adminUser', formData.username);
+      const response = await apiService.login({
+        username: formData.username,
+        password: formData.password
+      });
+
+      if (response.success) {
+        // Extraer datos de la respuesta anidada
+        const userData = response.data?.user || response.user;
+        const token = response.data?.token || response.token;
         
-        // Redirigir al panel de administración
-        navigate('/admin/dashboard');
-      } else {
-        setError('Credenciales incorrectas. Usuario: admin, Contraseña: admin123');
+        if (!userData || !token) {
+          setError('Respuesta del servidor inválida. Por favor, intenta de nuevo.');
+          return;
+        }
+        
+        // Guardar token y datos del usuario
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        // Verificar si es admin
+        if (userData.role === 'admin') {
+          navigate('/admin/dashboard');
+        } else {
+          setError('Acceso denegado. Solo administradores pueden acceder a este panel.');
+        }
       }
-    } catch (err) {
-      setError('Error de conexión. Por favor, intenta de nuevo.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Error de conexión. Por favor, intenta de nuevo.';
+      setError(errorMessage);
       console.error('Login Error:', err);
     } finally {
       setLoading(false);
@@ -130,12 +144,6 @@ const AdminLogin: React.FC = () => {
           </form>
 
           <div className="login-footer">
-            <div className="demo-credentials">
-              <h4>Credenciales de Demo:</h4>
-              <p><strong>Usuario:</strong> admin</p>
-              <p><strong>Contraseña:</strong> admin123</p>
-            </div>
-            
             <div className="security-note">
               <p>
                 <span className="security-icon">🔒</span>
